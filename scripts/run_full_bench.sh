@@ -26,10 +26,12 @@ if [ ! -d ".venv" ]; then
 fi
 source .venv/bin/activate
 
-echo "[remote] Installing dependencies..."
+echo "[remote] Installing lean CPU dependencies..."
+export PIP_NO_CACHE_DIR=1
 pip install -U pip
 pip install -r requirements.txt
-pip install vllm intel-extension-for-pytorch
+# Install vLLM specifically for CPU to avoid massive CUDA dependencies
+pip install vllm-cpu intel-extension-for-pytorch
 
 # Launch vLLM Engine
 echo "[remote] Launching Xeon 6 vLLM Engine..."
