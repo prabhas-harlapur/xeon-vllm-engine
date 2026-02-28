@@ -4,7 +4,7 @@ param(
     [string]$JumpUser = "prabhash",
     [string]$TargetHost = "10.0.68.162",
     [string]$TargetUser = "ENTER_XEON_USER",      # e.g., sdp
-    [string]$TargetPass = 'ENTER_XEON_PASSWORD',  # e.g., CloU$r#2!
+    [string]$TargetPass = 'ENTER_XEON_PASSWORD',  # e.g., sdp_password
     [string]$PpkPath = "ENTER_PATH_TO_PPK",      # e.g., C:\Users\...\prabhash.ppk"
     [string]$RemoteDir = "/home/ENTER_XEON_USER/xeon-engine"
 )
