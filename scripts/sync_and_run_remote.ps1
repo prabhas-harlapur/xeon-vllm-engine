@@ -3,10 +3,10 @@ param(
     [int]$JumpPort = 8065,
     [string]$JumpUser = "prabhash",
     [string]$TargetHost = "10.0.68.162",
-    [string]$TargetUser = "sdp",
-    [string]$TargetPass = 'CloU$r#2!',
-    [string]$PpkPath = "C:\Users\prabhash\OneDrive - Intel Corporation\Documents\prabhash.ppk",
-    [string]$RemoteDir = "/home/sdp/xeon-engine"
+    [string]$TargetUser = "ENTER_XEON_USER",      # e.g., sdp
+    [string]$TargetPass = 'ENTER_XEON_PASSWORD',  # e.g., CloU$r#2!
+    [string]$PpkPath = "ENTER_PATH_TO_PPK",      # e.g., C:\Users\...\prabhash.ppk"
+    [string]$RemoteDir = "/home/ENTER_XEON_USER/xeon-engine"
 )
 
 $ErrorActionPreference = "Stop"
