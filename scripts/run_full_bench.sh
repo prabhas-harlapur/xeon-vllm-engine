@@ -36,6 +36,7 @@ pip install vllm-cpu intel-extension-for-pytorch --extra-index-url https://downl
 
 # Launch vLLM Engine
 echo "[remote] Launching Xeon 6 vLLM Engine..."
+mkdir -p artifacts
 python3 scripts/launch_xeon_vllm.py --config "$CONFIG" > artifacts/launch.log 2>&1 &
 LAUNCH_PID=$!
 
