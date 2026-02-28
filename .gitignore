@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 artifacts/
 *.log
+scripts/sync_and_run_remote.ps1
