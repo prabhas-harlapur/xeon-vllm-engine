@@ -1,0 +1,54 @@
+model:
+  model: "meta-llama/Llama-3.1-8B-Instruct"
+  host: "0.0.0.0"
+  port: 8000
+  device: "cpu"
+  max_model_len: 8192
+  dtype: "bfloat16"
+  max_num_seqs: 256
+  extra_args:
+    - "--enforce-eager"
+
+xeon_tuning:
+  omp_num_threads: null
+  kmp_blocktime: 1
+  kmp_affinity: "granularity=fine,compact,1,0"
+  numactl_interleave: false
+  stagger_start_seconds: 2.0
+  instances_per_numa: 1
+  disable_hyperthreading_use: true
+  force_isa: null
+  use_ipex: true
+  ipex_weight_prepack: true
+  ipex_onednn_layout: true
+  ipex_jit_linear_repack: true
+  bf16_enabled: true
+
+benchmark:
+  endpoint_base_url: "http://127.0.0.1:8000/v1"
+  model: "meta-llama/Llama-3.1-8B-Instruct"
+  timeout_s: 180.0
+  # If these arrays are omitted, defaults are:
+  # concurrency_values = 1..100
+  # context_lengths = [1024,2048,3072,4096,5120,6144,7168,8192]
+  concurrency_values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100]
+  context_lengths: [1024, 2048, 3072, 4096, 5120, 6144, 7168, 8192]
+  max_tokens: 256
+  temperature: 0.0
+  requests_per_scenario: 100
+  stagger_wave_size: 8
+  stagger_wave_delay_s: 0.25
+  output_dir: "artifacts/benchmarks"
+
+autotune:
+  enabled: true
+  warmup_seconds: 20.0
+  healthcheck_timeout_s: 300.0
+  candidate_omp_threads: [16, 24, 32, 48, 64]
+  candidate_instances_per_numa: [1, 2]
+  candidate_max_num_seqs: [128, 192, 256]
+  candidate_stagger_start_seconds: [1.0, 2.0]
+  benchmark_requests_per_scenario: 40
+  benchmark_concurrency_values: [8, 16, 32, 64]
+  benchmark_context_lengths: [1024, 2048, 3072, 4096, 6144, 8192]
+  output_dir: "artifacts/autotune"

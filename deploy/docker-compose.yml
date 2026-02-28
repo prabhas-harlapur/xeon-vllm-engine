@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  xeon-vllm:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: xeon-vllm
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../configs:/app/configs
+      - ../artifacts:/app/artifacts
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    environment:
+      - HF_HOME=/root/.cache/huggingface
+    command: >
+      python scripts/launch_xeon_vllm.py --config configs/xeon6.example.yaml
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: xeon-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - xeon-vllm
+
+  grafana:
+    image: grafana/grafana:11.2.2
+    container_name: xeon-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus

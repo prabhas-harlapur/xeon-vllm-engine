@@ -1,0 +1,16 @@
+[Unit]
+Description=Xeon Optimized vLLM Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/xeon-engine
+ExecStart=/usr/bin/python3 /opt/xeon-engine/scripts/launch_xeon_vllm.py --config /opt/xeon-engine/configs/xeon6.local.yaml
+Restart=always
+RestartSec=5
+LimitNOFILE=1048576
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

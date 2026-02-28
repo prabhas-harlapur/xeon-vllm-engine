@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xeon-vllm-config
+  namespace: xeon-vllm
+data:
+  xeon6.local.yaml: |
+    model:
+      model: "meta-llama/Llama-3.1-8B-Instruct"
+      host: "0.0.0.0"
+      port: 8000
+      device: "cpu"
+      max_model_len: 8192
+      dtype: "bfloat16"
+      max_num_seqs: 256
+      extra_args:
+        - "--enforce-eager"
+    xeon_tuning:
+      omp_num_threads: 32
+      kmp_blocktime: 1
+      kmp_affinity: "granularity=fine,compact,1,0"
+      numactl_interleave: false
+      stagger_start_seconds: 2.0
+      instances_per_numa: 1
+      disable_hyperthreading_use: true
+      use_ipex: true

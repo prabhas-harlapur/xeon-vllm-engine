@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xeon-vllm
+  namespace: xeon-vllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xeon-vllm
+  template:
+    metadata:
+      labels:
+        app: xeon-vllm
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      containers:
+        - name: xeon-vllm
+          image: xeon-vllm:latest
+          imagePullPolicy: IfNotPresent
+          command: ["python", "scripts/launch_xeon_vllm.py", "--config", "/etc/xeon-config/xeon6.local.yaml"]
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "32"
+              memory: "96Gi"
+            limits:
+              cpu: "64"
+              memory: "192Gi"
+          volumeMounts:
+            - name: xeon-config
+              mountPath: /etc/xeon-config
+      volumes:
+        - name: xeon-config
+          configMap:
+            name: xeon-vllm-config

@@ -1,0 +1,11 @@
+Host xeon-jump
+    HostName <jump-host-ip>
+    Port <jump-host-port>
+    User <jump-user>
+    IdentityFile C:/path/to/private_key
+
+Host xeon-target
+    HostName <target-private-ip>
+    Port 22
+    User <target-user>
+    ProxyJump xeon-jump
