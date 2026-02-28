@@ -47,7 +47,7 @@ TAIL_PID=$!
 
 # Wait for health
 echo "[remote] Waiting for engine to be healthy (this can take 2-5 mins)..."
-python3 -c "
+if ! python3 -c "
 import time, httpx
 start = time.time()
 while time.time() - start < 300:
@@ -57,9 +57,14 @@ while time.time() - start < 300:
             exit(0)
     except:
         pass
-    time.sleep(2)
+    time.sleep(5)
 exit(1)
-"
+"; then
+    echo "[remote] ERROR: Engine failed to start. Showing logs:"
+    cat artifacts/launch.log
+    echo "[remote] TIP: If you see restricted model errors, ensure you have set export HF_TOKEN=your_token"
+    exit 1
+fi
 
 # Run Benchmark
 echo "[remote] Running benchmark matrix (Concurrency 1-100, Context 1k-8k)..."
