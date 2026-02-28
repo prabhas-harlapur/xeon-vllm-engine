@@ -162,7 +162,8 @@ class AutoTuner:
                         mean_latency_s=float(row["mean_latency_s"]),
                         p50_latency_s=float(row["p50_latency_s"]),
                         p95_latency_s=float(row["p95_latency_s"]),
-                        p99_latency_s=float(row["p99_latency_s"]),
+                        p95_ttft_s=float(row["p95_ttft_s"]),
+                        p95_tpot_s=float(row["p95_tpot_s"]),
                         throughput_req_per_s=float(row["throughput_req_per_s"]),
                         throughput_out_tok_per_s=float(row["throughput_out_tok_per_s"]),
                     )

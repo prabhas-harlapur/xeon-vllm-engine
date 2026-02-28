@@ -23,6 +23,8 @@ class RequestResult:
     request_id: int
     ok: bool
     latency_s: float
+    ttft_s: float
+    tpot_s: float
     prompt_tokens: int
     output_tokens: int
     error: str = ""
@@ -38,7 +40,8 @@ class ScenarioStats:
     mean_latency_s: float
     p50_latency_s: float
     p95_latency_s: float
-    p99_latency_s: float
+    p95_ttft_s: float
+    p95_tpot_s: float
     throughput_req_per_s: float
     throughput_out_tok_per_s: float
 
@@ -115,23 +118,46 @@ class VllmBenchmarker:
                 "prompt": synthetic_prompt(context_len),
                 "max_tokens": self.cfg.max_tokens,
                 "temperature": self.cfg.temperature,
+                "stream": True,
             }
             start = time.perf_counter()
+            ttft = 0.0
+            last_token_time = 0.0
+            sum_tpot = 0.0
+            tokens_received = 0
+            
             try:
-                response = await client.post(self.completions_url, json=payload)
+                async with client.stream("POST", self.completions_url, json=payload) as response:
+                    response.raise_for_status()
+                    async for line in response.aiter_lines():
+                        if not line or not line.startswith("data: "):
+                            continue
+                        
+                        curr_time = time.perf_counter()
+                        if tokens_received == 0:
+                            ttft = curr_time - start
+                            last_token_time = curr_time
+                        else:
+                            sum_tpot += (curr_time - last_token_time)
+                            last_token_time = curr_time
+                        
+                        tokens_received += 1
+                        
+                        if line.strip() == "data: [DONE]":
+                            break
+
                 latency = time.perf_counter() - start
-                response.raise_for_status()
-                body = response.json()
-                usage = body.get("usage", {})
-                prompt_tokens = int(usage.get("prompt_tokens", context_len))
-                completion_tokens = int(usage.get("completion_tokens", self.cfg.max_tokens))
+                avg_tpot = sum_tpot / max(1, tokens_received - 1) if tokens_received > 1 else 0.0
+                
                 result = RequestResult(
                     scenario=scenario,
                     request_id=request_id,
                     ok=True,
                     latency_s=latency,
-                    prompt_tokens=prompt_tokens,
-                    output_tokens=completion_tokens,
+                    ttft_s=ttft,
+                    tpot_s=avg_tpot,
+                    prompt_tokens=context_len, # approximated
+                    output_tokens=tokens_received,
                 )
             except Exception as exc:
                 result = RequestResult(
@@ -139,6 +165,8 @@ class VllmBenchmarker:
                     request_id=request_id,
                     ok=False,
                     latency_s=time.perf_counter() - start,
+                    ttft_s=0.0,
+                    tpot_s=0.0,
                     prompt_tokens=context_len,
                     output_tokens=0,
                     error=str(exc),
@@ -183,6 +211,8 @@ def _compute_stats(
     scenario: str, concurrency: int, context_len: int, results: list[RequestResult], elapsed_s: float
 ) -> ScenarioStats:
     latencies = [r.latency_s for r in results if r.ok]
+    ttfts = [r.ttft_s for r in results if r.ok]
+    tpots = [r.tpot_s for r in results if r.ok]
     ok_count = sum(1 for r in results if r.ok)
     total_out_tokens = sum(r.output_tokens for r in results if r.ok)
     mean_latency = statistics.fmean(latencies) if latencies else float("nan")
@@ -196,7 +226,8 @@ def _compute_stats(
         mean_latency_s=mean_latency,
         p50_latency_s=_compute_percentile(latencies, 50),
         p95_latency_s=_compute_percentile(latencies, 95),
-        p99_latency_s=_compute_percentile(latencies, 99),
+        p95_ttft_s=_compute_percentile(ttfts, 95),
+        p95_tpot_s=_compute_percentile(tpots, 95),
         throughput_req_per_s=(ok_count / elapsed_s) if elapsed_s > 0 else 0.0,
         throughput_out_tok_per_s=(total_out_tokens / elapsed_s) if elapsed_s > 0 else 0.0,
     )
