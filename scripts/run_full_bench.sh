@@ -31,8 +31,8 @@ pip cache purge || true
 export PIP_NO_CACHE_DIR=1
 pip install -U pip
 pip install -r requirements.txt
-# Install vLLM specifically for CPU to avoid massive CUDA dependencies
-pip install vllm-cpu intel-extension-for-pytorch --no-cache-dir
+# Use explicit PyTorch CPU index to resolve +cpu version conflicts
+pip install vllm-cpu intel-extension-for-pytorch --extra-index-url https://download.pytorch.org/whl/cpu --no-cache-dir
 
 # Launch vLLM Engine
 echo "[remote] Launching Xeon 6 vLLM Engine..."
