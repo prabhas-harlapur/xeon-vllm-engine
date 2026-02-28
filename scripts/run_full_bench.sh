@@ -40,8 +40,12 @@ mkdir -p artifacts
 python3 scripts/launch_xeon_vllm.py --config "$CONFIG" > artifacts/launch.log 2>&1 &
 LAUNCH_PID=$!
 
+# Tail logs in background to see progress
+tail -f artifacts/launch.log &
+TAIL_PID=$!
+
 # Wait for health
-echo "[remote] Waiting for engine to be healthy..."
+echo "[remote] Waiting for engine to be healthy (this can take 2-5 mins)..."
 python3 -c "
 import time, httpx
 start = time.time()
@@ -74,5 +78,6 @@ fi
 
 # Cleanup
 echo "[remote] Cleaning up..."
+kill $TAIL_PID || true
 kill $LAUNCH_PID || true
 echo "[remote] Done."
