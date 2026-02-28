@@ -25,6 +25,7 @@ if [ ! -d ".venv" ]; then
     python3 -m venv .venv
 fi
 source .venv/bin/activate
+export PYTHONPATH=$PYTHONPATH:.
 
 echo "[remote] Cleaning disk space and installing lean CPU dependencies..."
 pip cache purge || true
